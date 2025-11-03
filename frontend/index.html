@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Agent - منشئ المحتوى الذكي</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-generate:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-clear:hover {
+            background: #e0e0e0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f0f0f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .scenario-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .audio-player {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        audio {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .download-btn {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .download-btn:hover {
+            background: #45a049;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #c33;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .success {
+            background: #efe;
+            color: #3c3;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3c3;
+            display: none;
+            margin-top: 20px;
+        }
+
+        .success.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 AI Content Agent</h1>
+            <p>منشئ المحتوى الذكي - اكتب موضوع واحصل على سيناريو + صوت احترافي</p>
+        </div>
+
+        <form id="contentForm">
+            <div class="form-group">
+                <label for="topic">الموضوع *</label>
+                <textarea 
+                    id="topic" 
+                    placeholder="مثال: تعليم البرمجة بـ Python"
+                    required
+                ></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="language">اللغة</label>
+                <select id="language">
+                    <option value="ar">العربية</option>
+                    <option value="en">English</option>
+                    <option value="fr">Français</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn-generate">🚀 توليد المحتوى</button>
+                <button type="reset" class="btn-clear">🔄 مسح</button>
+            </div>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>جاري توليد المحتوى...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+        <div class="success" id="success"></div>
+
+        <div class="result" id="result">
+            <h3>📝 النتيجة:</h3>
+            
+            <div>
+                <h4 style="color: #667eea; margin-bottom: 10px;">السيناريو:</h4>
+                <div class="scenario-box" id="scenario"></div>
+            </div>
+
+            <div>
+                <h4 style="color: #667eea; margin-bottom: 10px;">🎙️ الملف الصوتي:</h4>
+                <div class="audio-player">
+                    <audio id="audioPlayer" controls></audio>
+                    <button class="download-btn" id="downloadBtn">📥 تحميل الملف</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        const form = document.getElementById('contentForm');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const success = document.getElementById('success');
+        const result = document.getElementById('result');
+        const scenarioBox = document.getElementById('scenario');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const topic = document.getElementById('topic').value;
+            const language = document.getElementById('language').value;
+
+            if (!topic.trim()) {
+                showError('الرجاء إدخال موضوع');
+                return;
+            }
+
+            await generateContent(topic, language);
+        });
+
+        async function generateContent(topic, language) {
+            try {
+                loading.style.display = 'block';
+                error.classList.remove('show');
+                success.classList.remove('show');
+                result.classList.remove('show');
+
+                const response = await fetch(
+                    `${API_URL}/generate-content?topic=${encodeURIComponent(topic)}&language=${language}`
+                );
+
+                if (!response.ok) {
+                    throw new Error('حدث خطأ في السيرفر');
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'نجح ✅') {
+                    displayResult(data);
+                } else {
+                    showError(data.error || 'حدث خطأ ما');
+                }
+            } catch (err) {
+                showError(err.message || 'تأكد من أن السيرفر يعمل على http://localhost:8000');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function displayResult(data) {
+            scenarioBox.textContent = data.scenario;
+            
+            // عرض الملف الصوتي
+            audioPlayer.src = `${API_URL}/${data.audio_file}`;
+            
+            downloadBtn.onclick = () => {
+                const a = document.createElement('a');
+                a.href = `${API_URL}/${data.audio_file}`;
+                a.download = 'content.mp3';
+                a.click();
+            };
+
+            result.classList.add('show');
+            showSuccess('تم توليد المحتوى بنجاح! 🎉');
+        }
+
+        function showError(msg) {
+            error.textContent = '❌ ' + msg;
+            error.classList.add('show');
+        }
+
+        function showSuccess(msg) {
+            success.textContent = '✅ ' + msg;
+            success.classList.add('show');
+        }
+    </script>
+</body>
+</html>
