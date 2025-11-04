@@ -1,9 +1,9 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import ollama
-from gtts import gTTS
+import requests
 import os
+from gtts import gTTS
 from datetime import datetime
 
 app = FastAPI(
@@ -12,14 +12,16 @@ app = FastAPI(
     debug=True,
 )
 
-# إعداد CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # يمكنك تخصيص الدومينات هنا إذا أردت مزيد أمان
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {os.environ.get('HF_TOKEN')}"}
 
 @app.get("/")
 async def root():
@@ -38,28 +40,6 @@ async def health_check():
 @app.post("/generate-scenario")
 async def generate_scenario(topic: str, language: str = "ar"):
     try:
-        prompt = f"""
-أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
-اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
-الموضوع: {topic}
-
-يجب أن يكون السيناريو:
-- واضح وسهل الفهم
-- ملائم للفيديو (مدة 3-5 دقائق)
-- جذاب ومثير للاهتمام
-
-السيناريو:
-        """
-
-import requests
-import os
-
-API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
-headers = {"Authorization": f"Bearer {os.environ.get('HF_TOKEN')}"}
-
-@app.post("/generate-scenario")
-async def generate_scenario(topic: str, language: str = "ar"):
-    try:
         prompt = f"""أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
 اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
 الموضوع: {topic}
@@ -68,22 +48,7 @@ async def generate_scenario(topic: str, language: str = "ar"):
         payload = {"inputs": prompt}
         response = requests.post(API_URL, headers=headers, json=payload)
         result = response.json()
-        scenario_text = result[0]["generated_text"]
-        return {
-            "topic": topic,
-            "language": language,
-            "scenario": scenario_text,
-            "status": "نجح ✅"
-        }
-    except Exception as e:
-        return {
-            "error": str(e),
-            "status": "فشل ❌"
-        }
-
-
-        scenario_text = response['response']
-
+        scenario_text = result[0]["generated_text"] if isinstance(result, list) and "generated_text" in result[0] else "لم يتم العثور على سيناريو"
         return {
             "topic": topic,
             "language": language,
@@ -123,28 +88,7 @@ async def text_to_speech(text: str, language: str = "ar"):
 @app.post("/generate-content")
 async def generate_content(topic: str, language: str = "ar"):
     try:
-        prompt = f"""
-أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
-اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
-الموضوع: {topic}
-
-يجب أن يكون السيناريو:
-- واضح وسهل الفهم
-- ملائم للفيديو (مدة 3-5 دقائق)
-- جذاب ومثير للاهتمام
-
-السيناريو:
-        """
-
-import requests
-import os
-
-API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
-headers = {"Authorization": f"Bearer {os.environ.get('HF_TOKEN')}"}
-
-@app.post("/generate-scenario")
-async def generate_scenario(topic: str, language: str = "ar"):
-    try:
+        # خطوة 1: توليد السيناريو
         prompt = f"""أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
 اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
 الموضوع: {topic}
@@ -153,21 +97,9 @@ async def generate_scenario(topic: str, language: str = "ar"):
         payload = {"inputs": prompt}
         response = requests.post(API_URL, headers=headers, json=payload)
         result = response.json()
-        scenario_text = result[0]["generated_text"]
-        return {
-            "topic": topic,
-            "language": language,
-            "scenario": scenario_text,
-            "status": "نجح ✅"
-        }
-    except Exception as e:
-        return {
-            "error": str(e),
-            "status": "فشل ❌"
-        }
+        scenario_text = result[0]["generated_text"] if isinstance(result, list) and "generated_text" in result[0] else "لم يتم العثور على سيناريو"
 
-        scenario_text = response['response']
-
+        # خطوة 2: تحويل السيناريو لصوت
         if not os.path.exists("audio_files"):
             os.makedirs("audio_files")
 
