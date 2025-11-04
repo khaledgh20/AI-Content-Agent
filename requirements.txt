@@ -4,3 +4,5 @@ python-dotenv==1.0.0
 sqlalchemy==2.0.23
 psycopg2-binary==2.9.9
 requests==2.31.0
+transformers==4.34.0    # أضفها إذا ستستخدم النماذج مباشرة
+torch==2.1.0            # تعتمد عليها معظم نماذج الذكاء الاصطناعي
