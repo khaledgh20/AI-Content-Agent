@@ -15,7 +15,7 @@ app = FastAPI(
 # إعداد CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # أو يمكنك تحديد الدومينات المطلوبة فقط
+    allow_origins=["*"],  # يمكنك تخصيص الدومينات هنا إذا أردت مزيد أمان
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,12 +37,6 @@ async def health_check():
 
 @app.post("/generate-scenario")
 async def generate_scenario(topic: str, language: str = "ar"):
-    """
-    توليد سيناريو للفيديو باستخدام Ollama
-
-    مثال:
-    /generate-scenario?topic=تعليم%20البرمجة&language=ar
-    """
     try:
         prompt = f"""
 أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
@@ -79,12 +73,6 @@ async def generate_scenario(topic: str, language: str = "ar"):
 
 @app.post("/text-to-speech")
 async def text_to_speech(text: str, language: str = "ar"):
-    """
-    تحويل النص إلى صوت باستخدام Google TTS
-
-    مثال:
-    /text-to-speech?text=مرحبا%20بك&language=ar
-    """
     try:
         if not os.path.exists("audio_files"):
             os.makedirs("audio_files")
@@ -109,12 +97,6 @@ async def text_to_speech(text: str, language: str = "ar"):
 
 @app.post("/generate-content")
 async def generate_content(topic: str, language: str = "ar"):
-    """
-    توليد محتوى كامل (سيناريو + صوت) بضغطة زر واحدة!
-
-    مثال:
-    /generate-content?topic=تعليم%20البرمجة&language=ar
-    """
     try:
         prompt = f"""
 أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
@@ -162,7 +144,7 @@ async def generate_content(topic: str, language: str = "ar"):
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
-        port=8000,
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8000)),
         reload=True
     )
