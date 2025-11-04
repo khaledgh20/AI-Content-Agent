@@ -51,11 +51,36 @@ async def generate_scenario(topic: str, language: str = "ar"):
 السيناريو:
         """
 
-        response = ollama.generate(
-            model="llama2",
-            prompt=prompt,
-            stream=False,
-        )
+import requests
+import os
+
+API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {os.environ.get('HF_TOKEN')}"}
+
+@app.post("/generate-scenario")
+async def generate_scenario(topic: str, language: str = "ar"):
+    try:
+        prompt = f"""أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
+اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
+الموضوع: {topic}
+يجب أن يكون السيناريو واضح وسهل الفهم وملائم للفيديو (مدة 3-5 دقائق) وجذاب ومثير للاهتمام.
+السيناريو:"""
+        payload = {"inputs": prompt}
+        response = requests.post(API_URL, headers=headers, json=payload)
+        result = response.json()
+        scenario_text = result[0]["generated_text"]
+        return {
+            "topic": topic,
+            "language": language,
+            "scenario": scenario_text,
+            "status": "نجح ✅"
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "status": "فشل ❌"
+        }
+
 
         scenario_text = response['response']
 
@@ -111,11 +136,35 @@ async def generate_content(topic: str, language: str = "ar"):
 السيناريو:
         """
 
-        response = ollama.generate(
-            model="llama2",
-            prompt=prompt,
-            stream=False,
-        )
+import requests
+import os
+
+API_URL = "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct"
+headers = {"Authorization": f"Bearer {os.environ.get('HF_TOKEN')}"}
+
+@app.post("/generate-scenario")
+async def generate_scenario(topic: str, language: str = "ar"):
+    try:
+        prompt = f"""أنت متخصص في كتابة سيناريوهات الفيديو الاحترافية.
+اكتب سيناريو قصير جداً (3-4 جمل فقط) باللغة {language} عن الموضوع التالي:
+الموضوع: {topic}
+يجب أن يكون السيناريو واضح وسهل الفهم وملائم للفيديو (مدة 3-5 دقائق) وجذاب ومثير للاهتمام.
+السيناريو:"""
+        payload = {"inputs": prompt}
+        response = requests.post(API_URL, headers=headers, json=payload)
+        result = response.json()
+        scenario_text = result[0]["generated_text"]
+        return {
+            "topic": topic,
+            "language": language,
+            "scenario": scenario_text,
+            "status": "نجح ✅"
+        }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "status": "فشل ❌"
+        }
 
         scenario_text = response['response']
 
